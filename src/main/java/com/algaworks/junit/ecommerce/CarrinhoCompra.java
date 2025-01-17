@@ -1,10 +1,12 @@
 package com.algaworks.junit.ecommerce;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class CarrinhoCompra {
 
@@ -23,8 +25,7 @@ public class CarrinhoCompra {
 	}
 
 	public List<ItemCarrinhoCompra> getItens() {
-		//TODO deve retornar uma nova lista para que a antiga não seja alterada
-		return null;
+		return new ArrayList<>(itens);
 	}
 
 	public Cliente getCliente() {
@@ -32,42 +33,80 @@ public class CarrinhoCompra {
 	}
 
 	public void adicionarProduto(Produto produto, int quantidade) {
-		//TODO parâmetros não podem ser nulos, deve retornar uma exception
-		//TODO quantidade não pode ser menor que 1
-		//TODO deve incrementar a quantidade caso o produto já exista
+
+		if (Objects.isNull(produto) || Objects.isNull(quantidade)) {
+			throw new IllegalArgumentException("Parâmetros não podem ser nulos");
+		}
+		if (quantidade < 1) {
+			throw new IllegalArgumentException("Quantidade do produto não pode ser menor que 1");
+		}
+
+		Optional<ItemCarrinhoCompra> produtoExistente = itens.stream().filter(item -> item.getProduto().equals(produto)).findFirst();
+
+		if (produtoExistente.isPresent()) {
+			produtoExistente.get().adicionarQuantidade(quantidade);
+		} else {
+			itens.add(new ItemCarrinhoCompra(produto, quantidade));
+		}
+
 	}
 
 	public void removerProduto(Produto produto) {
-		//TODO parâmetro não pode ser nulo, deve retornar uma exception
-		//TODO caso o produto não exista, deve retornar uma exception
-		//TODO deve remover o produto independente da quantidade
+		if (Objects.isNull(produto)) {
+			throw new IllegalArgumentException("Parâmetros não podem ser nulos");
+		}
+
+		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto)).findFirst();
+
+		if (produtoExiste.isEmpty()) throw new RuntimeException("Produto não existente no carrinho.");
+
+		itens.remove(produtoExiste.get());
 	}
 
 	public void aumentarQuantidadeProduto(Produto produto) {
-		//TODO parâmetro não pode ser nulo, deve retornar uma exception
-		//TODO caso o produto não exista, deve retornar uma exception
-		//TODO deve aumentar em um quantidade do produto
+		if (Objects.isNull(produto)) {
+			throw new IllegalArgumentException("Parâmetros não podem ser nulos");
+		}
+
+		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto)).findFirst();
+
+		if (produtoExiste.isEmpty()) throw new RuntimeException("Produto não existente no carrinho.");
+
+		produtoExiste.get().adicionarQuantidade(1);
 	}
 
     public void diminuirQuantidadeProduto(Produto produto) {
-		//TODO parâmetro não pode ser nulo, deve retornar uma exception
-		//TODO caso o produto não exista, deve retornar uma exception
-		//TODO deve diminuir em um quantidade do produto, caso tenha apenas um produto, deve remover da lista
+		if (Objects.isNull(produto)) {
+			throw new IllegalArgumentException("Parâmetros não podem ser nulos");
+		}
+		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto)).findFirst();
+
+		if (produtoExiste.isEmpty()) throw new RuntimeException("Produto não existente no carrinho.");
 	}
 
     public BigDecimal getValorTotal() {
-		//TODO implementar soma do valor total de todos itens
-		return null;
+		BigDecimal total = BigDecimal.ZERO;
+
+		for (ItemCarrinhoCompra item : itens) {
+			total = total.add(item.getValorTotal());
+		}
+
+		return total;
     }
 
 	public int getQuantidadeTotalDeProdutos() {
-		//TODO retorna quantidade total de itens no carrinho
-		//TODO Exemplo em um carrinho com 2 itens, com a quantidade 2 e 3 para cada item respectivamente, deve retornar 5
-		return 0;
+
+		int totalItens = 0;
+
+		for (ItemCarrinhoCompra item : itens) {
+			totalItens = totalItens + item.getQuantidade();
+		}
+
+		return totalItens;
 	}
 
 	public void esvaziar() {
-		//TODO deve remover todos os itens
+		itens.clear();
 	}
 
 	@Override
