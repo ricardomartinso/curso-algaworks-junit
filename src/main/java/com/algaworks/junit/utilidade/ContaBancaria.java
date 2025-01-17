@@ -1,27 +1,44 @@
 package com.algaworks.junit.utilidade;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class ContaBancaria {
 
+    BigDecimal saldo;
+
     public ContaBancaria(BigDecimal saldo) {
-        //TODO 1 - validar saldo: não pode ser nulo, caso seja, deve lançar uma IllegalArgumentException
-        //TODO 2 - pode ser zero ou negativo
+        if (Objects.isNull(saldo)) {
+            throw new IllegalArgumentException("Saldo não pode ser null");
+        }
+
+        this.saldo = saldo;
     }
 
     public void saque(BigDecimal valor) {
-        //TODO 1 - validar valor: não pode ser nulo, zero ou menor que zero, caso seja, deve lançar uma IllegalArgumentException
-        //TODO 2 - Deve subtrair o valor do saldo
-        //TODO 3 - Se o saldo for insuficiente deve lançar uma RuntimeException
+        // compareTo returns 0 if value equals to compared value
+        // compareTo returns -1 if values lower than compared value
+        if (Objects.isNull(valor) || valor.compareTo(BigDecimal.ZERO) == 0 || valor.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Saque não pode ser null, zero ou negativo");
+        }
+
+        if (saldo.compareTo(valor) < 0) {
+            throw new RuntimeException("Saldo insuficiente");
+        }
+
+        saldo = saldo.subtract(valor);
     }
 
     public void deposito(BigDecimal valor) {
-        //TODO 1 - validar valor: não pode ser nulo, zero ou menor que zero, caso seja, deve lançar uma IllegalArgumentException
-        //TODO 2 - Deve adicionar o valor ao saldo
+        // compareTo returns 0 if value equals to compared value
+        // compareTo returns -1 if values lower than compared value
+        if (Objects.isNull(valor) || valor.compareTo(BigDecimal.ZERO) == 0 || valor.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Depósito não pode ser null, zero ou negativo");
+        }
+        saldo = saldo.add(valor);
     }
 
     public BigDecimal saldo() {
-        //TODO 1 - retornar saldo
-        return null;
+        return this.saldo;
     }
 }
