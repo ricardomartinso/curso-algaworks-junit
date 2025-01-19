@@ -21,7 +21,7 @@ public class CarrinhoCompra {
 		Objects.requireNonNull(cliente);
 		Objects.requireNonNull(itens);
 		this.cliente = cliente;
-		this.itens = new ArrayList<>(itens); //Cria lista caso passem uma imutável
+		this.itens = new ArrayList<>(itens); // Cria lista caso passem uma imutável
 	}
 
 	public List<ItemCarrinhoCompra> getItens() {
@@ -34,14 +34,15 @@ public class CarrinhoCompra {
 
 	public void adicionarProduto(Produto produto, int quantidade) {
 
-		if (Objects.isNull(produto) || Objects.isNull(quantidade)) {
+		if (Objects.isNull(produto)) {
 			throw new IllegalArgumentException("Parâmetros não podem ser nulos");
 		}
 		if (quantidade < 1) {
 			throw new IllegalArgumentException("Quantidade do produto não pode ser menor que 1");
 		}
 
-		Optional<ItemCarrinhoCompra> produtoExistente = itens.stream().filter(item -> item.getProduto().equals(produto)).findFirst();
+		Optional<ItemCarrinhoCompra> produtoExistente = itens.stream().filter(item -> item.getProduto().equals(produto))
+				.findFirst();
 
 		if (produtoExistente.isPresent()) {
 			produtoExistente.get().adicionarQuantidade(quantidade);
@@ -56,9 +57,11 @@ public class CarrinhoCompra {
 			throw new IllegalArgumentException("Parâmetros não podem ser nulos");
 		}
 
-		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto)).findFirst();
+		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto))
+				.findFirst();
 
-		if (produtoExiste.isEmpty()) throw new RuntimeException("Produto não existente no carrinho.");
+		if (produtoExiste.isEmpty())
+			throw new RuntimeException("Produto não existente no carrinho.");
 
 		itens.remove(produtoExiste.get());
 	}
@@ -68,23 +71,34 @@ public class CarrinhoCompra {
 			throw new IllegalArgumentException("Parâmetros não podem ser nulos");
 		}
 
-		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto)).findFirst();
+		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto))
+				.findFirst();
 
-		if (produtoExiste.isEmpty()) throw new RuntimeException("Produto não existente no carrinho.");
+		if (produtoExiste.isEmpty())
+			throw new RuntimeException("Produto não existente no carrinho.");
 
 		produtoExiste.get().adicionarQuantidade(1);
 	}
 
-    public void diminuirQuantidadeProduto(Produto produto) {
+	public void diminuirQuantidadeProduto(Produto produto) {
 		if (Objects.isNull(produto)) {
 			throw new IllegalArgumentException("Parâmetros não podem ser nulos");
 		}
-		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto)).findFirst();
+		Optional<ItemCarrinhoCompra> produtoExiste = itens.stream().filter(item -> item.getProduto().equals(produto))
+				.findFirst();
 
-		if (produtoExiste.isEmpty()) throw new RuntimeException("Produto não existente no carrinho.");
+		if (produtoExiste.isEmpty())
+			throw new RuntimeException("Produto não existente no carrinho.");
+
+		if (produtoExiste.get().getQuantidade() == 1) {
+			itens.remove(produtoExiste.get());
+		} else {
+			produtoExiste.get().subtrairQuantidade(1);
+		}
+
 	}
 
-    public BigDecimal getValorTotal() {
+	public BigDecimal getValorTotal() {
 		BigDecimal total = BigDecimal.ZERO;
 
 		for (ItemCarrinhoCompra item : itens) {
@@ -92,7 +106,7 @@ public class CarrinhoCompra {
 		}
 
 		return total;
-    }
+	}
 
 	public int getQuantidadeTotalDeProdutos() {
 
@@ -111,8 +125,10 @@ public class CarrinhoCompra {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 		CarrinhoCompra that = (CarrinhoCompra) o;
 		return Objects.equals(itens, that.itens) && Objects.equals(cliente, that.cliente);
 	}
