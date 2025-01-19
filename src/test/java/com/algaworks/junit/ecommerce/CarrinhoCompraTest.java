@@ -34,6 +34,13 @@ class CarrinhoCompraTest {
             BigDecimal.valueOf(400)
     );
 
+    Produto p4 = new Produto(
+            4L,
+            "Produto Aleatorio",
+            "Produto aleatorio descricao",
+            BigDecimal.valueOf(250.45)
+    );
+
     CarrinhoCompra carrinhoCompra;
 
 
@@ -42,8 +49,8 @@ class CarrinhoCompraTest {
     class CarrinhoComprasComTresItens {
 
         ItemCarrinhoCompra item1 = new ItemCarrinhoCompra(p1,1);
-        ItemCarrinhoCompra item2 = new ItemCarrinhoCompra(p2,1);
-        ItemCarrinhoCompra item3 = new ItemCarrinhoCompra(p3,1);
+        ItemCarrinhoCompra item2 = new ItemCarrinhoCompra(p2,2);
+        ItemCarrinhoCompra item3 = new ItemCarrinhoCompra(p3,3);
 
 
         @BeforeEach
@@ -52,7 +59,7 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando o cliente listar os 3 itens do carrinho")
+        @DisplayName("Quando listar os 3 itens do carrinho")
         class ListaItensCarrinho {
 
             @Test
@@ -70,18 +77,12 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando o cliente adicionar um produto diferente ao carrinho")
+        @DisplayName("Quando adicionar um produto diferente ao carrinho")
         class AdicionaItemDiferenteAoCarrinho {
 
             @Test
             @DisplayName("Então adiciona item diferente ao carrinho")
             void adicionaItemDiferenteAoCarrinho() {
-                Produto p4 = new Produto(
-                        4L,
-                        "Produto Aleatorio",
-                        "Produto aleatorio descricao",
-                        BigDecimal.valueOf(250.45)
-                );
 
                 carrinhoCompra.adicionarProduto(p4, 2);
 
@@ -92,7 +93,7 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando o cliente adicionar um produto já existente no carrinho")
+        @DisplayName("Quando adicionar um produto já existente no carrinho")
         class AdicionaItemIgualAoCarrinho {
 
             @Test
@@ -100,17 +101,152 @@ class CarrinhoCompraTest {
             void adicionaItemIgualAoCarrinho() {
 
                 int quantidadeAdicionada = 1;
-                int tamanhoEsperadoAposAdicao = carrinhoCompra.getItens().size();
                 Optional<ItemCarrinhoCompra> itemCarrinho = carrinhoCompra.getItens().stream().filter(item -> item.getProduto().equals(p3)).findFirst();
-                int quantidadeDoProdutoAposAdicao = quantidadeAdicionada + itemCarrinho.get().getQuantidade();
+                int quantidadeDeProdutosAposAdicao = quantidadeAdicionada + itemCarrinho.get().getQuantidade();
 
                 carrinhoCompra.adicionarProduto(p3, quantidadeAdicionada);
-
-                assertEquals(tamanhoEsperadoAposAdicao, carrinhoCompra.getItens().size()); // carrinho manter o mesmo tamanho
-                assertEquals(quantidadeDoProdutoAposAdicao, itemCarrinho.get().getQuantidade()); // aumentar a quantidade de item do carrinho de acordo com a variavel quantidadeAdicionada
+                assertEquals(3, carrinhoCompra.getItens().size());
+                assertEquals(quantidadeDeProdutosAposAdicao, itemCarrinho.get().getQuantidade());
             }
         }
 
+        @Nested
+        @DisplayName("Quando adicionar produto utilizando parâmetros inválidos")
+        class AdicionaProdutoComParametrosInvalidos {
+            @Test
+            @DisplayName("Então deve retornar IllegalArgumentException")
+            void deveRetornarIllegalArgumentException() {
+
+                IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> {
+                    carrinhoCompra.adicionarProduto(null, 1);
+                });
+                assertEquals("Parâmetros não podem ser nulos", illegalArgumentException.getMessage());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando adicionar um produto com quantidade menor que 0")
+        class AdicionaProdutoComQuantidadeInvalida {
+            @Test
+            @DisplayName("Então deve retornar IllegalArgumentException")
+            void deveRetornarIllegalArgumentException() {
+                IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> {
+                    carrinhoCompra.adicionarProduto(p3, 0);
+                });
+                assertEquals("Quantidade do produto não pode ser menor que 1", illegalArgumentException.getMessage());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando tenta remover um produto do carrinho")
+        class RemoverProdutoDoCarrinho {
+            @Test
+            @DisplayName("Então deve remover o item do carrinho")
+            void deveRemoverProdutoDoCarrinho() {
+                int quantidadeDeItensCarrinho = carrinhoCompra.getItens().size();
+                carrinhoCompra.removerProduto(p1);
+                assertEquals(quantidadeDeItensCarrinho - 1, carrinhoCompra.getItens().size());
+                assertFalse(carrinhoCompra.getItens().stream().anyMatch(item -> item.getProduto().equals(p1)));
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando remover um produto inexistente")
+        class RemoverProdutoInexistente {
+            @Test
+            @DisplayName("Então deve retornar RuntimeException")
+            void deveRetornarRuntimeException() {
+                RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+                    carrinhoCompra.removerProduto(p4);
+                });
+                assertEquals("Produto não existente no carrinho.", runtimeException.getMessage());
+
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando remover um produto passando parâmetros inválidos")
+        class RemoverProdutoComParametrosInvalidos {
+            @Test
+            @DisplayName("Então deve retornar IllegalArgumentException")
+            void deveRetornarIllegalArgumentException() {
+                IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> {
+                    carrinhoCompra.removerProduto(null);
+                });
+                assertEquals("Parâmetros não podem ser nulos", illegalArgumentException.getMessage());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando aumentar quantidade de um produto existente")
+        class AumentaQuantidadeDoProduto {
+            @Test
+            @DisplayName("Então deve aumentar a quantidade do produto em 1")
+            void aumentaQuantidadeDoProdutoEm1() {
+
+                int quantidadeAntes = carrinhoCompra.getItens().get(0).getQuantidade();
+
+                carrinhoCompra.aumentarQuantidadeProduto(p1);
+
+                int quantidadeDepois = carrinhoCompra.getItens().get(0).getQuantidade();
+
+                assertEquals(quantidadeAntes + 1, quantidadeDepois);
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando aumentar quantidade de um produto inexistente")
+        class AumentaQuantidadeDeProdutoInexistente {
+            @Test
+            @DisplayName("Então deve retornar RuntimeException")
+            void deveRetornarRuntimeException() {
+                RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+                    carrinhoCompra.aumentarQuantidadeProduto(p4);
+                });
+                assertEquals("Produto não existente no carrinho.", runtimeException.getMessage());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando passar parâmetro inválido ao aumentar quantidade do produto")
+        class AumentarQuantidadeProdutoInvalido {
+            @Test
+            @DisplayName("Então deve retornar IllegalArgumentException")
+            void deveRetornarIllegalArgumentException() {
+                IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> {
+                    carrinhoCompra.aumentarQuantidadeProduto(null);
+                });
+                assertEquals("Parâmetros não podem ser nulos", illegalArgumentException.getMessage());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando diminuir quantidade de um produto com quantidade acima de 1")
+        class DiminuirQuantidadeDoProdutoQuantidadeMaiorQueUm {
+            @Test
+            @DisplayName("Então deve diminuir a quantidade do produto em um")
+            void diminuirQuantidadeDoProdutoEmUm() {
+
+                int quantidadeAntes = carrinhoCompra.getItens().get(2).getQuantidade();
+
+                carrinhoCompra.diminuirQuantidadeProduto(p3);
+
+                int quantidadeApos = carrinhoCompra.getItens().get(2).getQuantidade();
+
+                assertEquals(quantidadeAntes - 1, quantidadeApos);
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando diminuir quantidade de um produto com quantidade 1")
+        class DiminuirQuantidadeDeProdutoQuantidadeUm {
+            @Test
+            @DisplayName("Então deve remover o produto do carrinho")
+            void deveRemoverProdutoDoCarrinho() {
+                carrinhoCompra.diminuirQuantidadeProduto(p1);
+                assertEquals(2, carrinhoCompra.getItens().size());
+            }
+        }
     }
 
     @Nested
