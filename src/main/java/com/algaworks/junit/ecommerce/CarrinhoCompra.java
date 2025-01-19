@@ -2,10 +2,7 @@ package com.algaworks.junit.ecommerce;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class CarrinhoCompra {
@@ -44,11 +41,12 @@ public class CarrinhoCompra {
 		Optional<ItemCarrinhoCompra> produtoExistente = itens.stream().filter(item -> item.getProduto().equals(produto))
 				.findFirst();
 
-		if (produtoExistente.isPresent()) {
-			produtoExistente.get().adicionarQuantidade(quantidade);
-		} else {
+		if (produtoExistente.isEmpty()) {
 			itens.add(new ItemCarrinhoCompra(produto, quantidade));
+			return;
 		}
+
+		produtoExistente.get().adicionarQuantidade(quantidade);
 
 	}
 
@@ -61,7 +59,7 @@ public class CarrinhoCompra {
 				.findFirst();
 
 		if (produtoExiste.isEmpty())
-			throw new RuntimeException("Produto não existente no carrinho.");
+			throw new NoSuchElementException("Produto não existente no carrinho.");
 
 		itens.remove(produtoExiste.get());
 	}
@@ -75,7 +73,7 @@ public class CarrinhoCompra {
 				.findFirst();
 
 		if (produtoExiste.isEmpty())
-			throw new RuntimeException("Produto não existente no carrinho.");
+			throw new NoSuchElementException("Produto não existente no carrinho.");
 
 		produtoExiste.get().adicionarQuantidade(1);
 	}
@@ -88,7 +86,7 @@ public class CarrinhoCompra {
 				.findFirst();
 
 		if (produtoExiste.isEmpty())
-			throw new RuntimeException("Produto não existente no carrinho.");
+			throw new NoSuchElementException("Produto não existente no carrinho.");
 
 		if (produtoExiste.get().getQuantidade() == 1) {
 			itens.remove(produtoExiste.get());
@@ -99,24 +97,13 @@ public class CarrinhoCompra {
 	}
 
 	public BigDecimal getValorTotal() {
-		BigDecimal total = BigDecimal.ZERO;
-
-		for (ItemCarrinhoCompra item : itens) {
-			total = total.add(item.getValorTotal());
-		}
-
-		return total;
+		return itens.stream()
+				.map(ItemCarrinhoCompra::getValorTotal)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	public int getQuantidadeTotalDeProdutos() {
-
-		int totalItens = 0;
-
-		for (ItemCarrinhoCompra item : itens) {
-			totalItens = totalItens + item.getQuantidade();
-		}
-
-		return totalItens;
+		return itens.stream().mapToInt(ItemCarrinhoCompra::getQuantidade).sum();
 	}
 
 	public void esvaziar() {
