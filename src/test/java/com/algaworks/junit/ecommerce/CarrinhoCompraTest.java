@@ -4,6 +4,7 @@ import org.junit.jupiter.api.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,7 +78,7 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando adicionar um produto diferente ao carrinho")
+        @DisplayName("Quando adicionar produto diferente ao carrinho")
         class AdicionaItemDiferenteAoCarrinho {
 
             @Test
@@ -93,7 +94,7 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando adicionar um produto já existente no carrinho")
+        @DisplayName("Quando adicionar produto já existente no carrinho")
         class AdicionaItemIgualAoCarrinho {
 
             @Test
@@ -125,7 +126,7 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando adicionar um produto com quantidade menor que 0")
+        @DisplayName("Quando adicionar produto com quantidade menor que 0")
         class AdicionaProdutoComQuantidadeInvalida {
             @Test
             @DisplayName("Então deve retornar IllegalArgumentException")
@@ -138,7 +139,7 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando tenta remover um produto do carrinho")
+        @DisplayName("Quando remover produto do carrinho")
         class RemoverProdutoDoCarrinho {
             @Test
             @DisplayName("Então deve remover o item do carrinho")
@@ -151,21 +152,21 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando remover um produto inexistente")
+        @DisplayName("Quando remover produto inexistente")
         class RemoverProdutoInexistente {
             @Test
             @DisplayName("Então deve retornar RuntimeException")
             void deveRetornarRuntimeException() {
-                RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+                NoSuchElementException noSuchElementException = assertThrows(NoSuchElementException.class, () -> {
                     carrinhoCompra.removerProduto(p4);
                 });
-                assertEquals("Produto não existente no carrinho.", runtimeException.getMessage());
+                assertEquals("Produto não existente no carrinho.", noSuchElementException.getMessage());
 
             }
         }
 
         @Nested
-        @DisplayName("Quando remover um produto passando parâmetros inválidos")
+        @DisplayName("Quando remover produto passando parâmetros inválidos")
         class RemoverProdutoComParametrosInvalidos {
             @Test
             @DisplayName("Então deve retornar IllegalArgumentException")
@@ -178,7 +179,7 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando aumentar quantidade de um produto existente")
+        @DisplayName("Quando aumentar quantidade de produto existente")
         class AumentaQuantidadeDoProduto {
             @Test
             @DisplayName("Então deve aumentar a quantidade do produto em 1")
@@ -195,20 +196,20 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando aumentar quantidade de um produto inexistente")
+        @DisplayName("Quando aumentar quantidade de produto inexistente")
         class AumentaQuantidadeDeProdutoInexistente {
             @Test
             @DisplayName("Então deve retornar RuntimeException")
             void deveRetornarRuntimeException() {
-                RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
+                NoSuchElementException noSuchElementException = assertThrows(NoSuchElementException.class, () -> {
                     carrinhoCompra.aumentarQuantidadeProduto(p4);
                 });
-                assertEquals("Produto não existente no carrinho.", runtimeException.getMessage());
+                assertEquals("Produto não existente no carrinho.", noSuchElementException.getMessage());
             }
         }
 
         @Nested
-        @DisplayName("Quando passar parâmetro inválido ao aumentar quantidade do produto")
+        @DisplayName("Quando aumentar quantidade do produto e passar parâmetro inválido")
         class AumentarQuantidadeProdutoInvalido {
             @Test
             @DisplayName("Então deve retornar IllegalArgumentException")
@@ -221,11 +222,11 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando diminuir quantidade de um produto com quantidade acima de 1")
+        @DisplayName("Quando diminuir quantidade de produto com quantidade acima de 1")
         class DiminuirQuantidadeDoProdutoQuantidadeMaiorQueUm {
             @Test
-            @DisplayName("Então deve diminuir a quantidade do produto em um")
-            void diminuirQuantidadeDoProdutoEmUm() {
+            @DisplayName("Então deve diminuir a quantidade do produto em uma unidade")
+            void diminuirQuantidadeDoProdutoEmUmaUnidade() {
 
                 int quantidadeAntes = carrinhoCompra.getItens().get(2).getQuantidade();
 
@@ -238,13 +239,74 @@ class CarrinhoCompraTest {
         }
 
         @Nested
-        @DisplayName("Quando diminuir quantidade de um produto com quantidade 1")
-        class DiminuirQuantidadeDeProdutoQuantidadeUm {
+        @DisplayName("Quando diminuir quantidade de produto com uma unidade")
+        class DiminuirQuantidadeDeProdutoComUmaUnidade {
             @Test
             @DisplayName("Então deve remover o produto do carrinho")
             void deveRemoverProdutoDoCarrinho() {
                 carrinhoCompra.diminuirQuantidadeProduto(p1);
                 assertEquals(2, carrinhoCompra.getItens().size());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando diminuir quantidade de produto passando parâmetros inválidos")
+        class DiminuirQuantidadeDeProdutoParametrosInvalidos {
+            @Test
+            @DisplayName("Então deve retornar IllegalArgumentException")
+            void deveRetornarIllegalArgumentException() {
+                IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> {
+                    carrinhoCompra.diminuirQuantidadeProduto(null);
+                });
+                assertEquals("Parâmetros não podem ser nulos", illegalArgumentException.getMessage());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando diminuir quantidade de produto inexistente no carrinho")
+        class DiminuirQuantidadeDeProdutoInexistente {
+            @Test
+            @DisplayName("Então deve retornar RuntimeException")
+            void deveRetornarRuntimeException() {
+                NoSuchElementException noSuchElementException = assertThrows(NoSuchElementException.class, () -> {
+                    carrinhoCompra.diminuirQuantidadeProduto(p4);
+                });
+                assertEquals("Produto não existente no carrinho.", noSuchElementException.getMessage());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando somar o valor do carrinho")
+        class SomarValorDoCarrinho {
+            @Test
+            @DisplayName("Então deve retornar o valor total do carrinho")
+            void deveRetornarValorTotalCarrinho() {
+                BigDecimal totalEsperado = item1.getValorTotal().add(item2.getValorTotal()).add(item3.getValorTotal());
+                assertEquals(totalEsperado, carrinhoCompra.getValorTotal());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando somar a quantidade total de produtos no carrinho")
+        class SomarQuantidadeTotalProdutos {
+            @Test
+            @DisplayName("Então deve retornar a quantidade total de produtos no carrinho")
+            void deveRetornarAQuantidadeDeProdutosDoCarrinho() {
+                int quantidadeEsperadaDeProdutosCarrinho = item1.getQuantidade() + item2.getQuantidade() + item3.getQuantidade();
+
+                assertEquals(quantidadeEsperadaDeProdutosCarrinho, carrinhoCompra.getQuantidadeTotalDeProdutos());
+            }
+        }
+
+        @Nested
+        @DisplayName("Quando esvaziar o carrinho")
+        class EsvaziarOCarrinho {
+            @Test
+            @DisplayName("Então deve esvaziar o carrinho")
+            void deveEsvaziarOCarrinho() {
+                int tamanhoDoCarrinhoAposEsvaziar = 0;
+                carrinhoCompra.esvaziar();
+                assertEquals(tamanhoDoCarrinhoAposEsvaziar, carrinhoCompra.getItens().size());
             }
         }
     }
